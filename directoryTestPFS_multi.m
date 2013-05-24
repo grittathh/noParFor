@@ -1,0 +1,170 @@
+format compact
+[status,pbsOWorkDirStr] = system('$PBS_O_WORKDIR')
+
+endIndex = strfind(pbsOWorkDirStr,': is a directory') - 1
+startIndex = strfind(pbsOWorkDirStr,'/home/userid/') + length('/home/userid/')
+
+identifier = pbsOWorkDirStr(startIndex:endIndex)
+disp(identifier)
+
+startIndex = strfind(pbsOWorkDirStr,'/home/userid');
+pbsOWorkDirStr = pbsOWorkDirStr(startIndex:endIndex);
+disp(pbsOWorkDirStr)
+
+cd('/scratch/users');
+cd('userid');
+
+system(['find ' identifier  ' -prune -exec touch -m {} \;']); %update timestamp
+system(['find tempDir1 -prune -exec touch -m {} \;']); %update timestamp
+cd(identifier);
+
+load('inputDataStruct.mat')
+activeJobs = [];
+
+cwd = pwd;
+numNodes = 5;
+numPPN = 8;
+maxConcurrentJobs = numNodes*numPPN;
+
+for(index = 1:maxConcurrentJobs)
+    %create scratch directories
+    cd(cwd)
+    tempScratchName = ['scratch' num2str(index)] 
+    try
+        rmdir(tempScratchName,'s');
+    end
+    mkdir(tempScratchName);
+    cd(tempScratchName);
+    system(['cp $PBS_O_WORKDIR/* .'],'-echo');
+    system(['cp $PBS_O_WORKDIR/*.M .'],'-echo');
+    system(['cp $PBS_O_WORKDIR/*.job .'],'-echo');
+    system(['cp $PBS_O_WORKDIR/*.sh .'],'-echo');
+    system('cp /scratch/users/userid/tempDir1/TSMainSingle* .');
+    system('touch assignedJobs.ndx','-echo');
+    system('touch completedJobs.ndx','-echo')
+    myWorker(index).directory = pwd;
+    myWorker(index).immediateJobs = [];
+    myWorker(index).previousCompletedJobs = inf;
+end
+
+
+cd(pbsOWorkDirStr)
+submissionString = ['qsub -v OWORKDIR=' pbsOWorkDirStr ...
+                    ',SCRATCHDIR=' cwd ...
+                    ' -l nodes=' num2str(numNodes)  ...
+                    ':ppn=' num2str(numPPN) ...
+                    ',pmem=3gb,mem=' num2str(maxConcurrentJobs.*3) ...
+                    'gb myMulti2.job'];
+
+submissionString
+[status,result] = system(submissionString);
+result
+
+while(1)
+    %find completed jobs
+    cd(cwd)
+    completedJobs = [];
+    system('flock -x fileTracker.ndx -c '' cp fileTracker.ndx fileTrackerTemp.ndx '' ');
+    fid = fopen('fileTrackerTemp.ndx');
+    tTest = textscan(fid,'%s');
+    fclose(fid);
+    tTest = tTest{1};
+    for(index = 1:length(tTest))
+        str = tTest{index};
+        numToAdd = regexp(str,'\d+','match');
+        if(isempty(numToAdd))
+            continue;
+        end
+        if(isequal(numToAdd,0))
+            disp('a completed job is of number zero. weird.');
+            continue;
+        end
+        didError = regexp(str,'error','match');
+        if(~isempty(didError)) %if there is an error, didError will be not empty
+            disp(['found error with job ' numToAdd{1} ', skipping']);
+            continue;
+        end
+
+        completedJobs = [completedJobs str2num(numToAdd{1})];
+    end
+    completedJobs = unique(completedJobs);
+
+    %find immediate jobs for each worker
+    immediateJobs = [];
+    for(index = 1:maxConcurrentJobs)
+        previousCompletedJobs = length(intersect(myWorker(index).immediateJobs,completedJobs));
+
+        if(~myWorker(index).previousCompletedJobs && ~previousCompletedJobs)
+            disp(['worker ' num2str(index) ' hasnt done anything the last 2 times we checked. likely had error writing results to disk']);
+            disp('resetting worker tracking files');
+            cd(myWorker(index).directory)
+            system('flock -x completedJobs.ndx -c '' > completedJobs.ndx '' ');
+            system('flock -x assignedJobs.ndx -c '' > assignedJobs.ndx '' ');
+            myWorker(index).previousCompletedJobs = inf;
+            myWorker(index).immediateJobs = [];
+        else
+            disp(['worker ' num2str(index) ' completed ' num2str(previousCompletedJobs) ' jobs since last check']);
+            myWorker(index).immediateJobs = setdiff(myWorker(index).immediateJobs,completedJobs);
+            myWorker(index).immediateJobs
+            myWorker(index).previousCompletedJobs = previousCompletedJobs;
+        end
+        immediateJobs = [immediateJobs myWorker(index).immediateJobs];
+    end
+
+    if(isempty(completedJobs))
+        completedJobs = [];
+    else
+        disp(['completed ' num2str(length(completedJobs)) ' jobs']);
+    end
+
+    if(isempty(immediateJobs))
+        immediateJobs = [];
+    else
+        disp(['there are ' num2str(length(immediateJobs)) ' immediate jobs']);
+    end
+
+    jobsToRemove = [completedJobs immediateJobs];
+
+    %get complete list of jobs.
+    remainingJobs = 1:length(inputDataStruct);
+
+    if(~isempty(jobsToRemove))
+        if(sum(jobsToRemove < 1))
+            jobsToRemove(jobsToRemove < 1) = [];
+        end
+        remainingJobs(jobsToRemove) = [];
+    end
+
+    index = 1;
+    while(index <= maxConcurrentJobs)
+        if(isempty(remainingJobs))
+            break;
+        end
+        if(length(myWorker(index).immediateJobs) > 30)
+             disp(['worker ' num2str(index) ' is full']);
+             myWorker(index).immediateJobs
+            index = index + 1;
+            continue;
+        end
+        cd(myWorker(index).directory);
+        disp(['starting job ' num2str(remainingJobs(1)) ' on worker ' num2str(index)]);
+        newJobName = ['start' num2str(remainingJobs(1))];
+        system(['flock -x assignedJobs.ndx -c '' echo ' newJobName ' >> assignedJobs.ndx '' ']);
+        myWorker(index).immediateJobs = [myWorker(index).immediateJobs remainingJobs(1)];
+        remainingJobs(1) = [];
+    end
+    if(isempty(remainingJobs))
+        stillActiveJobs = [];
+        for(index = 1:maxConcurrentJobs)
+            stillActiveJobs = [stillActiveJobs myWorker(index).immediateJobs];            
+        end
+        if(isempty(stillActiveJobs))
+            break; %exit the main while loop
+        end
+    end
+    pause(10)
+end
+
+cd(cwd)
+cd ..
+system(['find ' identifier  ' -prune -exec touch -m {} \;']); %update timestamp

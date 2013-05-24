@@ -3,7 +3,7 @@ This is a pretty specific use case.  You have matlab with institutional license,
 Your code has a parfor that looks like this:
 
     parfor(index = 1:length(inputDataStruct))
-        output(index) = doSomething(inputDataStruct(index));
+        outputDataStruct(index) = doSomething(inputDataStruct(index));
     end
 
 This code creates a batch job on the cluster that runs doSomething on the pre-computed inputDataStruct.

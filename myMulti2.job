@@ -1,0 +1,17 @@
+#!/bin/bash -login
+#PBS -l walltime=100:00:00
+#PBS -o myMulti2Out
+#PBS -N myMulti2
+#PBS -j oe
+#PBS -m ae
+
+echo 'about to pbsdsh'
+echo ${PBS_O_WORKDIR}
+echo ${OWORKDIR}
+echo ${SCRATCHDIR}
+
+cd ${OWORKDIR}
+pwd
+ls *.sh
+module load matlabR2011b
+pbsdsh -vo ${OWORKDIR}/run_matlab.sh
