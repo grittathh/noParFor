@@ -11,7 +11,7 @@ This code creates a batch job on the cluster that runs doSomething on the pre-co
 Advantages over built-in parfor using matlabpool:
 
 * does not use any DCT licenses
-* easily scales to multiple nodes, multiple processors
+* easily scales to multiple nodes, multiple processors (in theory, matlabpool and parfor do this. in practice, you need to deal with the limited number of institutional DCT licenses)
 * you don't lose data when the communication to workers fails after awhile (may be specific to certain cluster implementations)
 
 Disadvantages over built-in parfor:
