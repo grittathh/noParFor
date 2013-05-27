@@ -3,12 +3,12 @@
 #PBS -l mem=2gb
 #PBS -N copyToScratchEnvironmentPFS
 #PBS -m ae
-#PBS -o output
+#PBS -o copyToScratchOut
 #PBS -j oe
 
 date
 module load matlabR2011b
 cd $PBS_O_WORKDIR
-matlab -nodisplay -r createScratchEnvironment
+matlab -nodisplay -r createScratchEnvironmentPFS
 exit
 date

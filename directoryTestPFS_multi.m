@@ -1,18 +1,19 @@
+userID = 'changeThis';
 format compact
 [status,pbsOWorkDirStr] = system('$PBS_O_WORKDIR')
 
 endIndex = strfind(pbsOWorkDirStr,': is a directory') - 1
-startIndex = strfind(pbsOWorkDirStr,'/home/userid/') + length('/home/userid/')
+startIndex = strfind(pbsOWorkDirStr,['/home/' userID '/']) + length(['/home/' userID '/'])
 
 identifier = pbsOWorkDirStr(startIndex:endIndex)
 disp(identifier)
 
-startIndex = strfind(pbsOWorkDirStr,'/home/userid');
+startIndex = strfind(pbsOWorkDirStr,['/home/' userID]);
 pbsOWorkDirStr = pbsOWorkDirStr(startIndex:endIndex);
 disp(pbsOWorkDirStr)
 
 cd('/scratch/users');
-cd('userid');
+cd(userID);
 
 system(['find ' identifier  ' -prune -exec touch -m {} \;']); %update timestamp
 system(['find tempDir1 -prune -exec touch -m {} \;']); %update timestamp
@@ -22,8 +23,10 @@ load('inputDataStruct.mat')
 activeJobs = [];
 
 cwd = pwd;
-numNodes = 5;
-numPPN = 8;
+memPerProc = 3;
+numPPN = 24/memPerProc; %24/3 = 8. 
+                        %24gb is the amount of memory each comp node has. were assuming this
+                        %job runs on comp nodes.
 maxConcurrentJobs = numNodes*numPPN;
 
 for(index = 1:maxConcurrentJobs)
@@ -35,11 +38,11 @@ for(index = 1:maxConcurrentJobs)
     end
     mkdir(tempScratchName);
     cd(tempScratchName);
-    system(['cp $PBS_O_WORKDIR/* .'],'-echo');
+    system(['cp $PBS_O_WORKDIR/*.m .'],'-echo');
     system(['cp $PBS_O_WORKDIR/*.M .'],'-echo');
     system(['cp $PBS_O_WORKDIR/*.job .'],'-echo');
     system(['cp $PBS_O_WORKDIR/*.sh .'],'-echo');
-    system('cp /scratch/users/userid/tempDir1/TSMainSingle* .');
+    system(['cp /scratch/users/' userID '/tempDir1/TSMainSingle* .']);
     system('touch assignedJobs.ndx','-echo');
     system('touch completedJobs.ndx','-echo')
     myWorker(index).directory = pwd;
@@ -53,7 +56,8 @@ submissionString = ['qsub -v OWORKDIR=' pbsOWorkDirStr ...
                     ',SCRATCHDIR=' cwd ...
                     ' -l nodes=' num2str(numNodes)  ...
                     ':ppn=' num2str(numPPN) ...
-                    ',pmem=3gb,mem=' num2str(maxConcurrentJobs.*3) ...
+                    ',pmem=' num2str(memPerProc) ...
+                    'gb,mem=' num2str(maxConcurrentJobs.*memPerProc) ...
                     'gb myMulti2.job'];
 
 submissionString

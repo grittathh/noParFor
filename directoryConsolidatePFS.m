@@ -1,14 +1,15 @@
+userID = 'changeThis';
 format compact
 [status,result] = system('$PBS_O_WORKDIR')
 endIndex = strfind(result,': is a directory') - 1
-startIndex = strfind(result,'/home/userid/') + length('/home/userid/')
+startIndex = strfind(result,['/home/' userID '/']) + length(['/home/' userID '/'])
 
 identifier = result(startIndex:endIndex)
 disp(identifier)
 
 cd('/scratch/users');
 ls
-cd(['userid/' identifier]);
+cd([userID '/' identifier]);
 
 load('inputDataStruct.mat')
 
