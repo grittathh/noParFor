@@ -38,6 +38,8 @@ for(index = 1:maxConcurrentJobs)
     end
     mkdir(tempScratchName);
     cd(tempScratchName);
+    
+    %copy all files necessary to run iterations to this particular worker's scratch directory
     system(['cp $PBS_O_WORKDIR/*.m .'],'-echo');
     system(['cp $PBS_O_WORKDIR/*.M .'],'-echo');
     system(['cp $PBS_O_WORKDIR/*.job .'],'-echo');
