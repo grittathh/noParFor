@@ -38,6 +38,21 @@ How to use this
 * copy the outputDataStruct.mat from OWORKDIR to your local computer.
 * done!
 
+How it works
+-----------
+
+* createScratchEnvironmentPBS creates a set of subdirectories as well as a main tracking file to track progress through the parfor loop.
+* each worker instance writes one output file (a single outputDataStruct.mat file) per iteration, to the right subdirectory.
+* each subdirectory will hold 1000 output .mat files
+* directoryTestPFS_multi.job (the "master" job) copies the contents of OWORKDIR to worker "working" directories, one per worker: /scratch/users/userid/identifier/scratchN where N is the Nth worker. Each worker's output is logged as a .out file in this directory.
+* workers sit around waiting for the master job to assign an iteration to work on. to do this, the master job simply adds a line to the end of the worker's assignedJobs.ndx file.
+* each worker has a assignedJobs.ndx file and a completedJobs.ndx file. the master job makes sure each worker has 30 more assigned jobs than completed jobs.
+* when each worker completes a job (iteration), it writes a single outputDataStruct.mat file and writes a line to the master job's tracking file.
+* write operations are atomicized using flock, but still not perfect.
+* the "master" job ignores write errors, reassigning jobs until a valid entry is written to the tracking file.
+* the "master" job keeps doing this until all iterations are completed.
+
+
 Inspired by
 -----------
 
