@@ -31,10 +31,10 @@ How to use this
 * copy this along with doSomething.m and all its dependencies to a directory on the cluster. We'll call this the OWORKDIR. Note this should be a unique directory name...the script will create a subdirectory in /scratch/users/userid/ with the same name.
 * copy the noParFor .job, .sh, and .m files into the same directory
 * run "qsub createScratchEnvironmentPFS.job" from OWORKDIR
-* when it's done, run "qsub directoryTestPFS_multi.job" from OWORKDIR
-* this should spawn myMulti2.job
-* when all the jobs are done, manually kill myMulti2.job
-* collect results by running "qsub directoryConsolidatePFS.job" from OWORKDIR
+* when it's done, run "qsub myMaster.job" from OWORKDIR
+* this should spawn myWorkers.job
+* when all the jobs are done, manually kill myWorkers.job
+* collect results by running "qsub consolidateOutput.job" from OWORKDIR
 * copy the outputDataStruct.mat from OWORKDIR to your local computer.
 * done!
 
@@ -44,8 +44,8 @@ How it works
 * createScratchEnvironmentPBS creates a set of subdirectories as well as a main tracking file to track progress through the parfor loop.
 * each worker instance writes one output file (a single outputDataStruct.mat file) per iteration, to the right subdirectory.
 * each subdirectory will hold 1000 output .mat files
-* directoryTestPFS_multi.job (the "master" job) copies the contents of OWORKDIR to worker "working" directories, one per worker: /scratch/users/userid/identifier/scratchN where N is the Nth worker. Each worker's output is logged as a .out file in this directory.
-* each worker is a proessor of myMulti2.job (a vnode). each node runs myTask.m via run_matlab.sh, via pbsdsh.
+* myMaster.job (the "master" job) copies the contents of OWORKDIR to worker "working" directories, one per worker: /scratch/users/userid/identifier/scratchN where N is the Nth worker. Each worker's output is logged as a .out file in this directory.
+* each worker is a processor of myWorkers.job (a vnode). each node runs myWorkerLogic.m via startWorkerLogic.sh, via pbsdsh.
 * workers sit around waiting for the master job to assign an iteration to work on. to do this, the master job simply adds a line to the end of the worker's assignedJobs.ndx file.
 * each worker has a assignedJobs.ndx file and a completedJobs.ndx file. the master job makes sure each worker has 30 more assigned jobs than completed jobs.
 * when each worker completes a job (iteration), it writes a single outputDataStruct.mat file and writes a line to the master job's tracking file.
