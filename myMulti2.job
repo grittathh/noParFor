@@ -1,7 +1,7 @@
 #!/bin/bash -login
 #PBS -l walltime=100:00:00
-#PBS -o myMulti2Out
-#PBS -N myMulti2
+#PBS -o myWorkersOut
+#PBS -N myWorkers
 #PBS -j oe
 #PBS -m ae
 
@@ -14,5 +14,5 @@ cd ${OWORKDIR}
 pwd
 ls *.sh
 module load matlabR2011b
-chmod u+x run_matlab.sh
-pbsdsh -vo ${OWORKDIR}/run_matlab.sh
+chmod u+x startWorkerLogic.sh
+pbsdsh -vo ${OWORKDIR}/startWorkerLogic.sh

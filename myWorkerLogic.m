@@ -1,5 +1,5 @@
-function myTask(vNodeNum,scratchDir)
-disp('in myTask.m')
+function myWorkerLogic(vNodeNum,scratchDir)
+disp('in myWorkerLogic.m')
 disp(num2str(vNodeNum))
 disp(scratchDir)
 %echo "$NUMPROCS"
@@ -67,18 +67,18 @@ while(1)
        pause(1);
        continue;
     end
-    runCurveFitSingle = runCurveFitInput(immediateJobs(1))
+    inputDataStructSingle = inputDataStruct(immediateJobs(1))
     toc
     tic
 	try
 	    disp('starting new iteration');
-	    outputDataStruct = clusterTSsim(runCurveFitSingle)
+	    outputDataStructSingle = clusterTSsim(inputDataStructSingle)
 	    disp('done with clusterTSsim');
-	    outputFileName = ['outputDataStruct' num2str(immediateJobs(1)) '.mat'];
+	    outputFileName = ['outputDataStructSingle' num2str(immediateJobs(1)) '.mat'];
 	catch
 	    disp('error!')
-	    outputDataStruct.index = immediateJobs(1);
-	    outputDataStruct.message = 'errored';
+	    outputDataStructSingle.index = immediateJobs(1);
+	    outputDataStructSingle.message = 'errored';
 	    outputFileName = ['errored' num2str(immediateJobs(1)) '.mat'];
 	end
 
@@ -87,7 +87,7 @@ while(1)
     tempDirName = num2str(ceil(immediateJobs(1)/1000));
     
     cd(tempDirName);
-    save(outputFileName,'outputDataStruct');
+    save(outputFileName,'outputDataStructSingle');
     cd ..
     system(['flock -x fileTracker.ndx -c '' echo ' outputFileName ' >> fileTracker.ndx '' ']);
     cd(workDir)
