@@ -1,4 +1,4 @@
-What's this for
+What this is for
 ----------
 
 You have matlab with institutional license, and access to a cluster running PBS.
