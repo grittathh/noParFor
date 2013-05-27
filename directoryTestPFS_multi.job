@@ -10,6 +10,6 @@ date
 module load matlabR2011b
 cd $PBS_O_WORKDIR
 pwd
-matlab -nodisplay -r myMaster
+matlab -nodisplay -r myMasterLogic
 exit
 date
