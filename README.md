@@ -1,4 +1,4 @@
-What is noParFor for?
+noParFor: distribute matlab parfor iterations on PBS without using the distributed computing toolbox
 ----------
 
 You have matlab with institutional license, and access to a cluster running PBS.
