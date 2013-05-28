@@ -63,7 +63,7 @@ while(1)
     tic
 	try
 	    disp('starting new iteration');
-	    outputDataStructSingle = clusterTSsim(inputDataStructSingle)
+	    outputDataStructSingle = doSomething(inputDataStructSingle)
 	    disp('done with clusterTSsim');
 	    outputFileName = ['outputDataStructSingle' num2str(immediateJobs(1)) '.mat'];
 	catch
