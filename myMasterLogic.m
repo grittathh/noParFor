@@ -23,8 +23,10 @@ load('inputDataStruct.mat')
 activeJobs = [];
 
 cwd = pwd;
-numNodes = 5;
-memPerProc = 3;
+numNodes = 5; %change this to set how many nodes you want to use
+memPerProc = 3; %change this to set how many nodes you want to use. 
+                %2 gigs per processor is the optimal number but if your job runs out of memory
+                %you may need a larger number
 numPPN = 24/memPerProc; %24/3 = 8. 
                         %24gb is the amount of memory each comp node has. were assuming this
                         %job runs on comp nodes.
@@ -46,6 +48,8 @@ for(index = 1:maxConcurrentJobs)
     system(['cp $PBS_O_WORKDIR/*.job .'],'-echo');
     system(['cp $PBS_O_WORKDIR/*.sh .'],'-echo');
     system(['cp /scratch/users/' userID '/tempDir1/TSMainSingle* .']);
+    
+    %finish setting up the worker
     system('touch assignedJobs.ndx','-echo');
     system('touch completedJobs.ndx','-echo')
     myWorker(index).directory = pwd;
@@ -55,6 +59,7 @@ end
 
 
 cd(pbsOWorkDirStr)
+%launch the workers
 submissionString = ['qsub -v OWORKDIR=' pbsOWorkDirStr ...
                     ',SCRATCHDIR=' cwd ...
                     ' -l nodes=' num2str(numNodes)  ...
