@@ -23,6 +23,7 @@ load('inputDataStruct.mat')
 activeJobs = [];
 
 cwd = pwd;
+numNodes = 5;
 memPerProc = 3;
 numPPN = 24/memPerProc; %24/3 = 8. 
                         %24gb is the amount of memory each comp node has. were assuming this

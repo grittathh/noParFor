@@ -38,15 +38,15 @@ for(index = 1:length(tTest))
 
     cd(tempDirName);
     try
-        load(['outputDataStruct' num2str(completedJobNumber) '.mat']);
+        load(['outputDataStructSingle' num2str(completedJobNumber) '.mat']);
     catch
-        // error handling
-        disp(['error loading outputDataStruct' num2str(completedJobNumber) '.mat']);
+        %error handling
+        disp(['error loading outputDataStructSingle' num2str(completedJobNumber) '.mat']);
     end
 
     cd(cwd);
 
-    outputDataStructArray(completedJobNumber) = outputDataStruct;
+    outputDataStruct(completedJobNumber) = outputDataStructSingle;
 
     if(mod(index,400))
         disp(['collected ' num2str(100*index/length(tTest)) '%']);
@@ -65,7 +65,6 @@ try
 catch
     disp('all jobs are complete and consolidated!');
 
-    outputDataStruct = outputDataStructArray;
     fileName = ['outputDataStruct' identifier '.mat'];
     save(fileName,'outputDataStruct');        
     
