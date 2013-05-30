@@ -24,6 +24,9 @@ Disadvantages over built-in parfor:
 * uses a few script files
 * in current form, requires /scratch/ directory (may be specific to certain cluster implementations)
 
+Advantages over using regular script to submit many jobs in sequence:
+* with noParFor you maximize the usage of matlab licenses. matlab counts one license per node-user. Therefore, it makes sense to fit as many jobs into each node as possible. Instead of relying on the cluster schefuler to do this, you can force this to happen by using noParFor.
+
 How to use this
 ----------
 
