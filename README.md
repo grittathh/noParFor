@@ -28,6 +28,7 @@ How to use this
 ----------
 
 * save inputDataStruct as "inputDataStruct.mat"
+* change the 'changeThis' fields at the top of some of the .m files to match your userid on the cluster.
 * copy this along with doSomething.m and all its dependencies to a directory on the cluster. We'll call this the *OWORKDIR*. Note this should be a unique directory name...the script will create a subdirectory in /scratch/users/userid/ with the same name.
 * copy the noParFor .job, .sh, and .m files into the same directory
 * run "qsub createScratchEnvironmentPFS.job" from *OWORKDIR*
@@ -48,10 +49,8 @@ How it works
 * each worker is a processor of myWorkers.job (a vnode). each node runs myWorkerLogic.m via startWorkerLogic.sh, via pbsdsh.
 * workers sit around waiting for the master job to assign an iteration to work on. to do this, the master job simply adds a line to the end of the worker's assignedJobs.ndx file.
 * each worker has a assignedJobs.ndx file and a completedJobs.ndx file. the master job makes sure each worker has 30 more assigned jobs than completed jobs.
-* when each worker completes a job (iteration), it writes a single outputDataStruct.mat file and writes a line to the master job's tracking file.
-* write operations are atomicized using flock, but still not perfect.
-* the "master" job ignores write errors, reassigning jobs until a valid entry is written to the tracking file.
-* the "master" job keeps doing this until all iterations are completed.
+* when each worker completes a job (iteration), it writes a single outputDataStruct .mat file to the right subfolder under /scratch/users/userid/identifier, adds a line its own completedJobs.ndx file, and adds a line to the master job's tracking file.
+* the "master" job keeps assigning jobs to workers until a valid entry is written to the tracking file for every iteration, until all iterations are completed.
 
 
 Inspired by
