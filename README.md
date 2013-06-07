@@ -15,7 +15,7 @@ Advantages over built-in parfor using matlabpool:
 
 * does not use any DCT licenses
 * easily scales to multiple nodes, multiple processors (in theory, matlabpool and parfor do this. in practice, you need to deal with the limited number of institutional DCT licenses)
-* you don't lose data when the communication to workers fails after awhile (may be specific to certain cluster implementations)
+* you don't lose any data if something crashes or fails. all results are saved to disk, and you can restart where you left off.
 
 Disadvantages over built-in parfor:
 
@@ -25,10 +25,10 @@ Disadvantages over built-in parfor:
 * in current form, requires /scratch/ directory (may be specific to certain cluster implementations)
 
 If you're using a script to submit many jobs in sequence:
-* with noParFor you maximize the usage of matlab licenses. matlab counts one license per node-user. Therefore, it makes sense to fit as many jobs into each node as possible. Instead of relying on the cluster schefuler to do this, you can force this to happen by using noParFor.
-* or, you could try using a parfor. if there are enough DCT licenses for you and communication is reliable, go for it.
+* try using a parfor. if there are enough DCT licenses for you and it's reliable, go for it.
+* noParFor maximizes use of non-DCT matlab licenses. matlab counts one license per node-user. Therefore, it makes sense to fit as many jobs into each node as possible. Instead of relying on the cluster schefuler to do this, you can force this to happen by using noParFor.
 
-How to use this
+How to use noParFor
 ----------
 
 * save inputDataStruct as "inputDataStruct.mat"
