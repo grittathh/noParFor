@@ -23,9 +23,6 @@ load('inputDataStruct.mat')
 activeJobs = [];
 
 cwd = pwd;
-numNodes = 5;
-memPerProc = 3;
-numPPN = 24/memPerProc; %24/3 = 8. 
                         %24gb is the amount of memory each comp node has. were assuming this
                         %job runs on comp nodes.
 maxConcurrentJobs = numNodes*numPPN;
@@ -45,7 +42,8 @@ for(index = 1:maxConcurrentJobs)
     system(['cp $PBS_O_WORKDIR/*.M .'],'-echo');
     system(['cp $PBS_O_WORKDIR/*.job .'],'-echo');
     system(['cp $PBS_O_WORKDIR/*.sh .'],'-echo');
-    system(['cp /scratch/users/' userID '/tempDir1/TSMainSingle* .']);
+    %    system(['cp /scratch/users/' userID '/tempDir1/TSMainSingle* .']);
+    system(['cp /scratch/users/' userID '/tempDir1/* .']);
     system('touch assignedJobs.ndx','-echo');
     system('touch completedJobs.ndx','-echo')
     myWorker(index).directory = pwd;
@@ -88,7 +86,7 @@ while(1)
         end
         didError = regexp(str,'error','match');
         if(~isempty(didError)) %if there is an error, didError will be not empty
-            disp(['found error with job ' numToAdd{1} ', skipping']);
+            %disp(['found error with job ' numToAdd{1} ', skipping']);
             continue;
         end
 
