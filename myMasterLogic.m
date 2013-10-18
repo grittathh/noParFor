@@ -23,6 +23,9 @@ load('inputDataStruct.mat')
 activeJobs = [];
 
 cwd = pwd;
+numNodes = 15;
+memPerProc = 5;
+numPPN = floor(24/memPerProc); %24/3 = 8. 
                         %24gb is the amount of memory each comp node has. were assuming this
                         %job runs on comp nodes.
 maxConcurrentJobs = numNodes*numPPN;
