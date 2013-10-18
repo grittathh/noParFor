@@ -23,17 +23,11 @@ load('inputDataStruct.mat')
 activeJobs = [];
 
 cwd = pwd;
-<<<<<<< HEAD
-numNodes = 15;
-memPerProc = 5;
-numPPN = floor(24/memPerProc); %24/3 = 8. 
-=======
-numNodes = 5;   %change this to set how many nodes you want to use
-memPerProc = 3; %change this to set how much memory each processor needs.
+numNodes = 15;  %change this to set how many nodes you want to use
+memPerProc = 5; %change this to set how much memory each processor needs.
                 %2 gigs per processor is the optimal number but if your job runs out of memory
                 %you may need a larger number
-numPPN = 24/memPerProc; %24/3 = 8
->>>>>>> bf6d0e58e74a75a8bedd08cf8351f0e5b1bdaf33
+numPPN = floor(24/memPerProc); %24/3 = 8.
                         %24gb is the amount of memory each comp node has. were assuming this
                         %job runs on comp nodes that contain 12 processors. 
                         %8 processors of each of 5 comp nodes will be used for this job.
@@ -56,14 +50,11 @@ for(index = 1:maxConcurrentJobs)
     system(['cp $PBS_O_WORKDIR/*.M .'],'-echo');
     system(['cp $PBS_O_WORKDIR/*.job .'],'-echo');
     system(['cp $PBS_O_WORKDIR/*.sh .'],'-echo');
-<<<<<<< HEAD
-    %    system(['cp /scratch/users/' userID '/tempDir1/TSMainSingle* .']);
     system(['cp /scratch/users/' userID '/tempDir1/* .']);
-=======
-    system(['cp /scratch/users/' userID '/tempDir1/TSMainSingle* .']);
+
     
     %finish setting up the worker
->>>>>>> bf6d0e58e74a75a8bedd08cf8351f0e5b1bdaf33
+
     system('touch assignedJobs.ndx','-echo');
     system('touch completedJobs.ndx','-echo')
     myWorker(index).directory = pwd;
