@@ -2,22 +2,13 @@ function myWorkerLogic(vNodeNum,scratchDir)
 disp('in myWorkerLogic.m')
 disp(num2str(vNodeNum))
 disp(scratchDir)
-%echo "$NUMPROCS"
 
 cd(scratchDir)
 cd(['scratch' num2str(vNodeNum)])
 ls
 pwd
 disp(pwd)
-%cd $PBS_O_WORKDIR
-%module load matlabR2011b
-%date
-%matlab -nodesktop
 format compact
-%[status,result] = system('$NUMPROCS')
-%numProcs = textscan(result,'/bin/bash: %d');
-%numProcs = numProcs{1}
-%maxNumCompThreads(numProcs)
 maxNumCompThreads(1)
 
 tic
@@ -72,7 +63,7 @@ while(1)
     tic
 	try
 	    disp('starting new iteration');
-	    outputDataStructSingle = clusterTSsim(inputDataStructSingle)
+	    outputDataStructSingle = doSomething(inputDataStructSingle)
 	    disp('done with clusterTSsim');
 	    outputFileName = ['outputDataStructSingle' num2str(immediateJobs(1)) '.mat'];
 	catch
