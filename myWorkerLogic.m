@@ -2,65 +2,65 @@ function myWorkerLogic(vNodeNum,scratchDir)
 disp('in myWorkerLogic.m')
 disp(num2str(vNodeNum))
 disp(scratchDir)
+%echo "$NUMPROCS"
 
 cd(scratchDir)
 cd(['scratch' num2str(vNodeNum)])
 ls
 pwd
 disp(pwd)
+
 format compact
+%[status,result] = system('$NUMPROCS')
+%numProcs = textscan(result,'/bin/bash: %d');
+%numProcs = numProcs{1}
+%maxNumCompThreads(numProcs)
 maxNumCompThreads(1)
 
-tic
 cwd = pwd;
-cd ..
 disp('loading inputDataStruct');
-load('inputDataStruct.mat');
+
+matObj = matfile('inputDataStruct.mat');
+theFieldName = setxor('Properties',fieldnames(matObj));
+theSize = size(matObj,theFieldName{1});
+
 disp('loaded');
-cd(cwd)
 
 while(1)
-    %find completed jobs
-    completedJobs = [];
-    system('flock -x completedJobs.ndx -c '' cp completedJobs.ndx completedJobsTemp.ndx '' ');
-    completedFID = fopen('completedJobsTemp.ndx');
-    completedTest = textscan(completedFID,'%s');
-    fclose(completedFID);
-    completedTest = completedTest{1};
-    for(index = 1:length(completedTest))
-        str = completedTest{index};
-        numToAdd = regexp(str,'\d+','match');
-        completedJobs = [completedJobs str2num(numToAdd{1})];
+    [~,result] = system('[ -e kill.txt ] && echo "true" || echo "false"');
+    
+    if(~isempty(strfind(result,'true')))
+        disp('found kill.txt, attempting a graceful exit');
+        return;
     end
-    completedJobs = unique(completedJobs);
 
-    %find assigned jobs
-    assignedJobs = [];
-    system('flock -x assignedJobs.ndx -c '' cp assignedJobs.ndx assignedJobsTemp.ndx '' ');
-    assignedFID = fopen('assignedJobsTemp.ndx');
-    assignedTest = textscan(assignedFID,'%s');
-    fclose(assignedFID);
-    assignedTest = assignedTest{1};
-    for(index = 1:length(assignedTest))
-        str = assignedTest{index};
-        numToAdd = regexp(str,'\d+','match');
-        assignedJobs = [assignedJobs str2num(numToAdd{1})];
-    end
-    assignedJobs = unique(assignedJobs);
+    tstart = tic;
 
-    if(sum(assignedJobs) < 0)
-       exit
     end
+    completedJobs = checkNDX('completedJobs.ndx');
+    assignedJobs  = checkNDX('assignedJobs.ndx');
  
     immediateJobs = setdiff(assignedJobs,completedJobs);
+    disp(['rechecked index files in ' num2str(toc(tstart)) ' seconds']);
 
     if(isempty(immediateJobs))
-       pause(1);
-       continue;
+        disp('No immediateJobs, nothing to do, waiting for new assignment...');
+        pause(1);
+        continue;
+    end
+
+    while(~isempty(immediateJobs))
+    
+    if(sum(theSize == 1) == 1)
+        inputDataStructSingle = matObj.(theFieldName{1})(immediateJobs(1));
+    else
+        inputDataStructSingle = matObj.(theFieldName{1})(:,immediateJobs(1));
+    end
     end
     inputDataStructSingle = inputDataStruct(immediateJobs(1))
     toc
     tic
+    tstart = tic;
 	try
 	    disp('starting new iteration');
 	    outputDataStructSingle = doSomething(inputDataStructSingle)
@@ -86,4 +86,11 @@ while(1)
 
     toc
     tic
+end
+    disp(['finished job ' num2str(immediateJobs(1)) ' in ' num2str(toc(tstart)) ' seconds']);
+    immediateJobs(1) = [];
+
+    end
+    %system('flock -x completedJobs.ndx -c '' > completedJobs.ndx '' ');
+    %system('flock -x assignedJobs.ndx -c '' > assignedJobs.ndx '' ');
 end

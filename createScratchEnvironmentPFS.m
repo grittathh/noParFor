@@ -18,6 +18,9 @@ system('rm *.ndx','-echo');
 system('touch fileTracker.ndx','-echo');
 
 matObj = matfile('inputDataStruct.mat');
+theFieldName = setxor('Properties',fieldnames(matObj));
+theSize = size(matObj,theFieldName{1});
+
 if(sum(theSize == 1) == 1)
     maxDirectoryNumber = ceil(max(theSize) / 1000);
 else
