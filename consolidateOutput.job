@@ -6,9 +6,10 @@
 #PBS -j oe
 #PBS -m ae
 
-module load matlabR2011b
+module load matlab
 date
 cd $PBS_O_WORKDIR
 matlab -nodisplay -r consolidateOutput
 exit
 date
+cp outputDataStruct.mat $PBS_O_WORKDIR

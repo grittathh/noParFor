@@ -7,7 +7,7 @@
 #PBS -j oe
 
 date
-module load matlabR2011b
+module load matlab
 cd $PBS_O_WORKDIR
 matlab -nodisplay -r createScratchEnvironmentPFS
 exit
