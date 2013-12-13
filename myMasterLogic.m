@@ -249,7 +249,6 @@ while(1)
         
         newJobName
         cd(myWorker(index).directory);
-        system(['flock -x assignedJobs.ndx -c '' echo ' newJobName ' >> assignedJobs.ndx '' ']);
         system(['flock -x assignedJobs.ndx -c '' printf "' newJobName '" >> assignedJobs.ndx '' ']);
         disp(['filled worker ' num2str(index) ' in ' num2str(toc(tstart)) ' seconds']);
         index = index + 1;
