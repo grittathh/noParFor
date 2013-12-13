@@ -1,4 +1,4 @@
-#PBS -l walltime=60:00:00
+#PBS -l walltime=300:00:00
 #PBS -l nodes=1:ppn=1
 #PBS -l mem=2gb
 #PBS -N myMaster
@@ -7,7 +7,7 @@
 #PBS -j oe
 
 date
-module load matlabR2011b
+module load matlab
 cd $PBS_O_WORKDIR
 pwd
 matlab -nodisplay -r myMasterLogic

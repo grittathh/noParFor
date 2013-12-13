@@ -13,6 +13,15 @@ echo ${SCRATCHDIR}
 cd ${OWORKDIR}
 pwd
 ls *.sh
-module load matlabR2011b
+module load matlab
 chmod u+x startWorkerLogic.sh
-pbsdsh -vo ${OWORKDIR}/startWorkerLogic.sh
+if [ $USEPBSDSH -eq 1 ]
+then
+#/usr/local/bin/pbsdsh -vo ${OWORKDIR}/startWorkerLogic.sh
+/usr/local/torque/4.2.5/bin/pbsdsh -vo ${OWORKDIR}/startWorkerLogic.sh
+else
+echo 'no pbsdsh'
+echo ${PBS_VNODENUM}
+echo ${MY_VNODENUM}
+${OWORKDIR}/startWorkerLogic.sh
+fi
